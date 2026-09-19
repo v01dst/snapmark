@@ -1,23 +1,49 @@
 # snapmark
 
-A tiny, local-first bookmark and snippet manager for the terminal.
+**A local-first knowledge pocket for your terminal.**
 
-## Usage
+Save bookmarks, commands, snippets, docs, and useful text without accounts, cloud sync, or API keys.
 
-- `snapmark add rust https://rust-lang.org`
-- `snapmark list`
-- `snapmark search rust`
-- `snapmark get rust`
-- `snapmark rm rust`
+## Features
 
-Local JSON storage. No account, server, API key, or cloud sync.
+- Fast native Rust CLI
+- Local JSON storage
+- Full-text search across names, values, and tags
+- Tags for organizing entries
+- Rename and delete
+- Script-friendly output
+- No network dependency
+
+## Commands
+
+```bash
+snapmark add rust https://rust-lang.org --tags lang,reference
+snapmark add deploy "cargo build --release" --tags command,rust
+
+snapmark list
+snapmark list --tag rust
+snapmark search cargo
+snapmark get deploy
+
+snapmark rename deploy release-build
+snapmark tag release-build command rust
+snapmark rm release-build
+snapmark clear
+```
+
+## Design
+
+snapmark is intentionally local-first: your data lives on your machine as readable JSON. There is no account system and no server.
 
 ## Roadmap
 
-- [ ] Tags
-- [ ] Import/export
-- [ ] Fuzzy search
+- [ ] Markdown snippets with files
+- [ ] Import/export JSON and Markdown
+- [ ] Fuzzy ranking
 - [ ] Shell completions
-- [ ] Encryption option
+- [ ] Interactive TUI
+- [ ] Optional encryption
 
-MIT License.
+## License
+
+MIT
