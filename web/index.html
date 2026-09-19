@@ -1,21 +1,67 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>snapmark</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#090909;color:#eee}
-body{max-width:1000px;margin:0 auto;padding:48px 20px}h1{font-size:42px;margin:0 0 8px}p{color:#999}
-input,button,textarea{font:inherit;background:#111;color:#eee;border:1px solid #2b2b2b;border-radius:10px;padding:12px}
-input{width:100%;box-sizing:border-box;margin:20px 0}.grid{display:grid;gap:10px}
-.card{padding:16px;border:1px solid #242424;border-radius:14px;background:#0e0e0e}.name{font-weight:700}.value{margin-top:8px;color:#bbb;white-space:pre-wrap}.tag{display:inline-block;margin:10px 6px 0 0;color:#ff6a3d;font-size:12px}
-</style></head>
-<body><h1>snapmark</h1><p>Your local developer knowledge vault.</p>
+*{box-sizing:border-box}body{max-width:1000px;margin:0 auto;padding:48px 20px}
+h1{font-size:42px;margin:0 0 8px;letter-spacing:-1px}p{color:#999}
+input,button{font:inherit;background:#111;color:#eee;border:1px solid #2b2b2b;border-radius:10px;padding:12px}
+button{cursor:pointer}button:hover{border-color:#ff6a3d}
+.toolbar{display:grid;grid-template-columns:1fr auto;gap:10px;margin:24px 0}
+form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;margin-bottom:24px}
+.grid{display:grid;gap:10px}.card{padding:16px;border:1px solid #242424;border-radius:14px;background:#0e0e0e}
+.row{display:flex;justify-content:space-between;gap:16px}.name{font-weight:700}.value{margin-top:8px;color:#bbb;white-space:pre-wrap;overflow-wrap:anywhere}
+.tag{display:inline-block;margin:10px 6px 0 0;color:#ff6a3d;font-size:12px}.muted{color:#777;font-size:13px}
+@media(max-width:700px){form,.toolbar{grid-template-columns:1fr}.row{align-items:flex-start}}
+</style>
+</head>
+<body>
+<h1>snapmark</h1>
+<p>Your local developer knowledge vault. Everything stays on this machine.</p>
+
+<form id="add">
+<input name="name" placeholder="Name" required>
+<input name="value" placeholder="URL, command, note..." required>
+<input name="tags" placeholder="tags,comma,separated">
+<button>Save</button>
+</form>
+
+<div class="toolbar">
 <input id="q" placeholder="Search bookmarks, snippets, commands, docs...">
+<button id="refresh">Refresh</button>
+</div>
+
 <div id="list" class="grid"></div>
 <script>
 const q=document.querySelector('#q'), list=document.querySelector('#list');
-async function load(){const u=q.value?'/api/search?q='+encodeURIComponent(q.value):'/api/entries';const r=await fetch(u);const data=await r.json();list.innerHTML=data.map(e=>'<article class="card"><div class="name">'+esc(e.name)+'</div><div class="value">'+esc(e.value)+'</div><div>'+e.tags.map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')+'</div></article>').join('')||'<p>No entries found.</p>'}
+const add=document.querySelector('#add'), refresh=document.querySelector('#refresh');
+
+async function load(){
+  const u=q.value?'/api/search?q='+encodeURIComponent(q.value):'/api/entries';
+  const r=await fetch(u); const data=await r.json();
+  list.innerHTML=data.map(e=>`<article class="card">
+    <div class="row"><div class="name">${esc(e.name)}</div>
+    <button data-remove="${encodeURIComponent(e.name)}">Delete</button></div>
+    <div class="value">${esc(e.value)}</div>
+    <div>${e.tags.map(t=>'<span class="tag">#'+esc(t)+'</span>').join('')}</div>
+  </article>`).join('')||'<p class="muted">No entries found.</p>';
+}
+add.addEventListener('submit',async e=>{
+  e.preventDefault(); const f=new FormData(add);
+  const body={name:f.get('name'),value:f.get('value'),tags:String(f.get('tags')).split(',').map(x=>x.trim()).filter(Boolean)};
+  const r=await fetch('/api/entries',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){alert(await r.text());return} add.reset(); load();
+});
+list.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-remove]'); if(!b)return;
+  if(!confirm('Delete this entry?'))return;
+  await fetch('/api/entries/'+b.dataset.remove,{method:'DELETE'}); load();
+});
+q.addEventListener('input',load); refresh.addEventListener('click',load); load();
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-q.addEventListener('input',()=>load());load();
-</script></body></html>
+</script>
+</body>
+</html>
