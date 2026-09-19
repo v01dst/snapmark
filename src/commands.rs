@@ -1,5 +1,5 @@
 use crate::{cli::Command, error::{Error, Result}, model::{Entry, Store}, search, storage};
-use std::{fs, net::SocketAddr, path::Path};
+use std::{fs, net::SocketAddr};
 use tokio::net::TcpListener;
 
 pub async fn run(command: Command) -> Result<()> {
@@ -101,5 +101,3 @@ fn print_entry(e: &Entry) {
     if e.tags.is_empty() { println!("{}  {}", e.name, e.value); }
     else { println!("{}  {}  [{}]", e.name, e.value, e.tags.join(", ")); }
 }
-
-fn _ensure_path(_: &Path) {}
