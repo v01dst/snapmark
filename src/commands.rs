@@ -4,7 +4,7 @@ use tokio::net::TcpListener;
 
 pub async fn run(command: Command) -> Result<()> {
     match command {
-        Command::Serve { port, host, open } => serve(&host, port, open).await,
+        Command::Serve { port, host } => serve(&host, port).await,
         command => run_local(command),
     }
 }
@@ -89,7 +89,7 @@ fn export_json(store: &Store, file: &str) -> Result<()> {
     Ok(())
 }
 
-async fn serve(host: &str, port: u16, _open: bool) -> Result<()> {
+async fn serve(host: &str, port: u16) -> Result<()> {
     let app = crate::web::router();
     let addr: SocketAddr = format!("{host}:{port}").parse().map_err(|e| Error::Server(e.to_string()))?;
     println!("snapmark web → http://{addr}");
