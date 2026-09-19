@@ -12,4 +12,8 @@ pub enum Error {
     NotFound(String),
     #[error("entry already exists: {0}")]
     AlreadyExists(String),
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
+    #[error("server error: {0}")]
+    Server(String),
 }
